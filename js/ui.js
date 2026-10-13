@@ -1,5 +1,5 @@
 // UI 기본 부품 — 아이콘, 토스트, 시트(모달), 확인창
-import { esc } from './util.js?v=2.0.0';
+import { esc } from './util.js?v=2.1.0';
 
 const sv = (d, extra = '') => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ${extra}>${d}</svg>`;
 export const ICON = {

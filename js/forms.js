@@ -2,15 +2,15 @@
 import {
   all, get, kv, upsert, remove, setKV, batch, replaceAll, getState, merge, normalize, emptyState, serialize,
   configureSync, disconnectSync, testConnection, syncNow, syncConfig, history, getDevice,
-} from './store.js?v=2.0.0';
-import { PERSONS, PAYS, ASSET_TYPES, LOAN_TYPES, EXPENSE_CATS, INCOME_CATS, TOKEN_URL, DEFAULT_REPO } from './config.js?v=2.0.0';
-import { ui, names, person, me, catList, cat, assetType, recTxId, goalCurrent, budgetTotal, budgetCat } from './core.js?v=2.0.0';
-import { searchSymbols, refreshQuotes, getQuote, krwPer, normalizeSymbol, symbolLabel } from './market.js?v=2.0.0';
+} from './store.js?v=2.1.0';
+import { PERSONS, PAYS, ASSET_TYPES, LOAN_TYPES, EXPENSE_CATS, INCOME_CATS, TOKEN_URL, DEFAULT_REPO } from './config.js?v=2.1.0';
+import { ui, names, person, me, catList, cat, assetType, recTxId, goalCurrent, budgetTotal, budgetCat } from './core.js?v=2.1.0';
+import { loadSymbols, searchLocal, searchRemote, refreshQuotes, getQuote, krwPer, normalizeSymbol, symbolLabel } from './market.js?v=2.1.0';
 import {
   $, $$, esc, uid, num, won, parseAmount, fmtInput, bindAmountInputs, today, ym, ymd, parseYmd, debounce, b64url,
   download, loadJSON, saveJSON, sha256, relTime, fmtDec,
-} from './util.js?v=2.0.0';
-import { openSheet, closeSheet, toast, confirmSheet, ICON } from './ui.js?v=2.0.0';
+} from './util.js?v=2.1.0';
+import { openSheet, closeSheet, toast, confirmSheet, ICON } from './ui.js?v=2.1.0';
 
 const typeKey = (t) => (t === 'income' ? 'income' : 'expense');
 const catGrid = (type, sel, id) => `<div class="cat-grid ${type === 'income' ? 'inc' : ''}" id="${id}">${catList(type).map((c) => `<button type="button" class="cat-btn ${c.key === sel ? 'on' : ''}" data-v="${esc(c.key)}"><span class="e">${c.emoji}</span><span>${esc(c.name)}</span></button>`).join('')}</div>`;
@@ -311,32 +311,58 @@ export function openInvestForm({ id, kind } = {}) {
   }
   const qEl = $('#if-q', el);
   if (qEl) {
+    // 앱 안 종목 목록에서 글자 칠 때마다 바로 찾고, 결과가 적을 때만 네이버 검색으로 보충
+    loadSymbols();
     const results = $('#if-results', el);
-    const run = debounce(async () => {
+    let list = [], seq = 0;
+    const msg = (t) => `<div class="small muted" style="padding:8px">${t}</div>`;
+    const render = (more) => {
+      results.innerHTML = list.map((r, i) => `<button type="button" data-i="${i}"><span><span class="nm">${esc(r.name)}</span><br><span class="mk">${esc(r.code)} · ${esc(r.market)}</span></span><span class="mk">선택 →</span></button>`).join('')
+        + (more ? msg(list.length ? '다른 종목 더 찾는 중…' : '찾는 중…')
+          : list.length ? '' : msg('검색 결과가 없어요. 이름이나 종목코드(005930)로 다시 검색해 보세요.'));
+    };
+    const pick = async (r) => {
+      seq++;
+      Object.assign(f, { symbol: r.symbol, name: r.name, type: r.type });
+      list = [];
+      results.innerHTML = '';
+      qEl.value = '';
+      $('#if-picked', el).innerHTML = `<b>${esc(r.name)}</b> <span class="muted">${esc(r.code)}</span><br><span class="muted">현재가 불러오는 중…</span>`;
+      await refreshQuotes([r.symbol], { fast: true });
+      if (f.symbol !== r.symbol) return;
+      const q = getQuote(r.symbol);
+      if (q) f.currency = q.currency;
+      if (q && !parseAmount($('#if-avg', el).value)) $('#if-avg', el).value = fmtInput(q.price);
+      showPicked();
+      if (!q) $('#if-picked', el).querySelector('.muted:last-child').textContent = '현재가를 못 불러왔어요 — 저장하면 1분 안에 다시 시도해요';
+      $('#if-qty', el).focus();
+    };
+    results.onclick = (e) => {
+      const b = e.target.closest('button[data-i]');
+      if (b && list[Number(b.dataset.i)]) pick(list[Number(b.dataset.i)]);
+    };
+    const remote = debounce(async (q, my) => {
+      const extra = await searchRemote(q).catch(() => []);
+      if (my !== seq) return;
+      const seen = new Set(list.map((x) => x.symbol));
+      list = [...list, ...extra.filter((x) => !seen.has(x.symbol))].slice(0, 15);
+      render(false);
+    }, 300);
+    const run = async () => {
       const q = qEl.value.trim();
-      if (!q) { results.innerHTML = ''; return; }
-      results.innerHTML = '<div class="small muted" style="padding:8px">검색 중…</div>';
-      const list = await searchSymbols(q);
-      if (qEl.value.trim() !== q) return;
-      results.innerHTML = list.length ? list.map((r, i) => `<button type="button" data-i="${i}"><span><span class="nm">${esc(r.name)}</span><br><span class="mk">${esc(r.code)} · ${esc(r.market)}</span></span><span class="mk">선택 →</span></button>`).join('')
-        : '<div class="small muted" style="padding:8px">검색 결과가 없어요. 이름이나 종목코드(005930)로 다시 검색해 보세요.</div>';
-      results.onclick = async (e) => {
-        const b = e.target.closest('button[data-i]');
-        if (!b) return;
-        const r = list[Number(b.dataset.i)];
-        Object.assign(f, { symbol: r.symbol, name: r.name, type: r.type });
-        results.innerHTML = '';
-        qEl.value = '';
-        $('#if-picked', el).innerHTML = `<b>${esc(r.name)}</b> <span class="muted">${esc(r.code)}</span><br><span class="muted">현재가 불러오는 중…</span>`;
-        await refreshQuotes([r.symbol]);
-        const q = getQuote(r.symbol);
-        if (q) f.currency = q.currency;
-        if (q && !parseAmount($('#if-avg', el).value)) $('#if-avg', el).value = fmtInput(q.price);
-        showPicked();
-        $('#if-qty', el).focus();
-      };
-    }, 350);
+      const my = ++seq;
+      if (!q) { list = []; results.innerHTML = ''; return; }
+      const local = await searchLocal(q);
+      if (my !== seq) return;
+      list = local || [];
+      const more = list.length < 5;
+      render(more);
+      if (more) remote(q, my);
+    };
     qEl.addEventListener('input', run);
+    qEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.isComposing && list[0]) { e.preventDefault(); pick(list[0]); }
+    });
     if (!ex) setTimeout(() => qEl.focus(), 280);
   }
 

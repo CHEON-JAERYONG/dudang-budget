@@ -1,16 +1,16 @@
 // 화면 렌더링 — 홈 / 내역 / 통계 / 자산 / 설정
-import { all, kv, exists, syncStatus, getDevice } from './store.js?v=2.0.0';
-import { APP_VERSION, REFRESH_OPTIONS } from './config.js?v=2.0.0';
+import { all, kv, exists, syncStatus, getDevice } from './store.js?v=2.1.0';
+import { APP_VERSION, REFRESH_OPTIONS } from './config.js?v=2.1.0';
 import {
   ui, names, person, me, PERSON_COLOR, catList, cat, pay, assetType, loanType, txMonth, txYear, totals, sumBy, expensesOf,
   monthsBack, sortTx, budgetTotal, budgetCat, monthProgress, recTxId, ruleDate, holdingValue, netWorth, goalCurrent, dday,
   greeting, refreshSec, mkChart, chartOptions, barStyle, cssVar, isDesktop,
-} from './core.js?v=2.0.0';
-import { getQuote, lastQuoteTime, symbolLabel, marketState, fxInfo, krwPer } from './market.js?v=2.0.0';
+} from './core.js?v=2.1.0';
+import { getQuote, lastQuoteTime, symbolLabel, marketState, fxInfo, krwPer } from './market.js?v=2.1.0';
 import {
   esc, num, won, fitWon, signedWon, compactWon, fmtDec, ym, today, addMonths, daysInMonth, monthLabel, parseYmd, dayLabel, relTime, clock, weekday, loadJSON,
-} from './util.js?v=2.0.0';
-import { ICON } from './ui.js?v=2.0.0';
+} from './util.js?v=2.1.0';
+import { ICON } from './ui.js?v=2.1.0';
 
 const PERSON_ORDER = ['husband', 'both', 'wife'];
 

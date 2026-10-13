@@ -1,5 +1,5 @@
 // 두덩's 가계부 — 상수/카테고리 정의
-export const APP_VERSION = '2.0.0';
+export const APP_VERSION = '2.1.0';
 
 // 데이터 저장소 (비공개 GitHub 저장소)
 export const DEFAULT_REPO = { owner: 'CHEON-JAERYONG', repo: 'dudang-budget-data', path: 'data.json', branch: 'main' };
