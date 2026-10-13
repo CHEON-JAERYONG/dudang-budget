@@ -1,0 +1,21 @@
+{
+  "name": "두덩's 가계부",
+  "short_name": "두덩가계부",
+  "description": "신혼부부 둘이 함께 쓰는 가계부 — 실시간 동기화, 실시간 시세, 예산·고정지출·목표저축",
+  "lang": "ko-KR",
+  "start_url": "./#/home",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fbf6f2",
+  "theme_color": "#ff7a6b",
+  "categories": ["finance", "lifestyle"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "지출 입력", "short_name": "지출", "url": "./?add=expense#/home", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "수입 입력", "short_name": "수입", "url": "./?add=income#/home", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
