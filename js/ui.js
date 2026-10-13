@@ -1,5 +1,5 @@
 // UI 기본 부품 — 아이콘, 토스트, 시트(모달), 확인창
-import { esc } from './util.js?v=2.1.0';
+import { esc } from './util.js?v=2.1.2';
 
 const sv = (d, extra = '') => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ${extra}>${d}</svg>`;
 export const ICON = {
@@ -80,6 +80,34 @@ export const sheetOpen = () => Boolean(current);
 
 window.addEventListener('popstate', () => { if (current) closeSheet(true); });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && current) closeSheet(); });
+
+// ===== 숫자 자동 맞춤 =====
+// 금액 칸이 좁으면 "…"로 자르지 않고 글자를 줄여서 끝까지 보이게 (그래도 안 되면 줄바꿈)
+const FIT = '.hero .big, .kpi .v, .cardbill .amt, .people .amt, .sumbar .v, .nw .big, .nw-split b, .cal .d .e, .cal .d .i, [data-fit]';
+function fitNumbers() {
+  const els = [...document.querySelectorAll(FIT)];
+  // 원래 글자 크기(인라인 지정 포함)로 되돌린 뒤 다시 잼
+  for (const el of els) { if (el.dataset.fit0 !== undefined) el.style.fontSize = el.dataset.fit0; el.classList.remove('fit-wrap'); }
+  const over = els.filter((el) => el.clientWidth && el.scrollWidth > el.clientWidth + 1)
+    .map((el) => [el, el.clientWidth, el.scrollWidth, parseFloat(getComputedStyle(el).fontSize)]);
+  for (const [el, w, sw, base] of over) {
+    if (el.dataset.fit0 === undefined) el.dataset.fit0 = el.style.fontSize;
+    const min = Math.max(9, base * 0.55);
+    let size = Math.max(min, Math.floor(((base * w) / sw) * 10) / 10);
+    el.style.fontSize = size + 'px';
+    while (el.scrollWidth > el.clientWidth + 1 && size > min) { size = Math.max(min, size - 0.5); el.style.fontSize = size + 'px'; }
+    if (el.scrollWidth > el.clientWidth + 1) el.classList.add('fit-wrap');
+  }
+}
+let fitQueued = false;
+export function scheduleFit() {
+  if (fitQueued) return;
+  fitQueued = true;
+  requestAnimationFrame(() => { fitQueued = false; fitNumbers(); });
+}
+new MutationObserver(scheduleFit).observe(document.body, { childList: true, subtree: true, characterData: true });
+window.addEventListener('resize', scheduleFit);
+document.fonts?.ready.then(scheduleFit);
 
 // ===== 확인창 =====
 export function confirmSheet({ title, message, ok = '확인', danger = false }) {

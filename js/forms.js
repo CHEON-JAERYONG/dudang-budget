@@ -2,15 +2,15 @@
 import {
   all, get, kv, upsert, remove, setKV, batch, replaceAll, getState, merge, normalize, emptyState, serialize,
   configureSync, disconnectSync, testConnection, syncNow, syncConfig, history, getDevice,
-} from './store.js?v=2.1.0';
-import { PERSONS, PAYS, ASSET_TYPES, LOAN_TYPES, EXPENSE_CATS, INCOME_CATS, TOKEN_URL, DEFAULT_REPO } from './config.js?v=2.1.0';
-import { ui, names, person, me, catList, cat, assetType, recTxId, goalCurrent, budgetTotal, budgetCat } from './core.js?v=2.1.0';
-import { loadSymbols, searchLocal, searchRemote, refreshQuotes, getQuote, krwPer, normalizeSymbol, symbolLabel } from './market.js?v=2.1.0';
+} from './store.js?v=2.1.2';
+import { PERSONS, PAYS, ASSET_TYPES, LOAN_TYPES, EXPENSE_CATS, INCOME_CATS, TOKEN_URL, DEFAULT_REPO } from './config.js?v=2.1.2';
+import { ui, names, person, me, catList, cat, assetType, recTxId, goalCurrent, budgetTotal, budgetCat } from './core.js?v=2.1.2';
+import { loadSymbols, searchLocal, searchRemote, refreshQuotes, getQuote, krwPer, normalizeSymbol, symbolLabel } from './market.js?v=2.1.2';
 import {
   $, $$, esc, uid, num, won, parseAmount, fmtInput, bindAmountInputs, today, ym, ymd, parseYmd, debounce, b64url,
   download, loadJSON, saveJSON, sha256, relTime, fmtDec,
-} from './util.js?v=2.1.0';
-import { openSheet, closeSheet, toast, confirmSheet, ICON } from './ui.js?v=2.1.0';
+} from './util.js?v=2.1.2';
+import { openSheet, closeSheet, toast, confirmSheet, ICON } from './ui.js?v=2.1.2';
 
 const typeKey = (t) => (t === 'income' ? 'income' : 'expense');
 const catGrid = (type, sel, id) => `<div class="cat-grid ${type === 'income' ? 'inc' : ''}" id="${id}">${catList(type).map((c) => `<button type="button" class="cat-btn ${c.key === sel ? 'on' : ''}" data-v="${esc(c.key)}"><span class="e">${c.emoji}</span><span>${esc(c.name)}</span></button>`).join('')}</div>`;

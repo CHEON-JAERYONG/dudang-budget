@@ -1,16 +1,16 @@
 // 화면 렌더링 — 홈 / 내역 / 통계 / 자산 / 설정
-import { all, kv, exists, syncStatus, getDevice } from './store.js?v=2.1.0';
-import { APP_VERSION, REFRESH_OPTIONS } from './config.js?v=2.1.0';
+import { all, kv, exists, syncStatus, getDevice } from './store.js?v=2.1.2';
+import { APP_VERSION, REFRESH_OPTIONS } from './config.js?v=2.1.2';
 import {
   ui, names, person, me, PERSON_COLOR, catList, cat, pay, assetType, loanType, txMonth, txYear, totals, sumBy, expensesOf,
   monthsBack, sortTx, budgetTotal, budgetCat, monthProgress, recTxId, ruleDate, holdingValue, netWorth, goalCurrent, dday,
   greeting, refreshSec, mkChart, chartOptions, barStyle, cssVar, isDesktop,
-} from './core.js?v=2.1.0';
-import { getQuote, lastQuoteTime, symbolLabel, marketState, fxInfo, krwPer } from './market.js?v=2.1.0';
+} from './core.js?v=2.1.2';
+import { getQuote, lastQuoteTime, symbolLabel, marketState, fxInfo, krwPer } from './market.js?v=2.1.2';
 import {
-  esc, num, won, fitWon, signedWon, compactWon, fmtDec, ym, today, addMonths, daysInMonth, monthLabel, parseYmd, dayLabel, relTime, clock, weekday, loadJSON,
-} from './util.js?v=2.1.0';
-import { ICON } from './ui.js?v=2.1.0';
+  esc, num, won, signedWon, compactWon, fmtDec, ym, today, addMonths, daysInMonth, monthLabel, parseYmd, dayLabel, relTime, clock, weekday, loadJSON,
+} from './util.js?v=2.1.2';
+import { ICON } from './ui.js?v=2.1.2';
 
 const PERSON_ORDER = ['husband', 'both', 'wife'];
 
@@ -79,7 +79,7 @@ function peopleSplit(exps) {
   return `<div class="stackbar" role="img" aria-label="사람별 지출 비율">${seg || '<i style="width:100%;background:var(--surface-3)"></i>'}</div>
     <div class="people">${PERSON_ORDER.map((k) => {
       const v = pm.get(k) || 0;
-      return `<div title="${won(v)}"><div class="who"><i style="background:var(${PERSON_COLOR[k]})"></i>${person(k).emoji} ${esc(person(k).name)}</div><div class="amt num">${isDesktop() ? won(v) : compactWon(v) + '원'}</div><div class="pc">${total ? Math.round((v / total) * 100) : 0}%</div></div>`;
+      return `<div title="${won(v)}"><div class="who"><i style="background:var(${PERSON_COLOR[k]})"></i>${person(k).emoji} ${esc(person(k).name)}</div><div class="amt num">${won(v)}</div><div class="pc">${total ? Math.round((v / total) * 100) : 0}%</div></div>`;
     }).join('')}</div>`;
 }
 
@@ -241,7 +241,7 @@ export function listBody() {
   const base = searching ? all('tx') : txMonth(ui.month);
   const list = applyFilters(base);
   const t = totals(list);
-  const sum = `<div class="sumbar"><div><div class="k">수입</div><div class="v num income-text">${fitWon(t.inc)}</div></div><div><div class="k">지출</div><div class="v num">${fitWon(t.exp)}</div></div><div><div class="k">합계</div><div class="v num">${t.net > 0 ? '+' : ''}${fitWon(t.net)}</div></div></div>`;
+  const sum = `<div class="sumbar"><div><div class="k">수입</div><div class="v num income-text">${won(t.inc)}</div></div><div><div class="k">지출</div><div class="v num">${won(t.exp)}</div></div><div><div class="k">합계</div><div class="v num">${signedWon(t.net)}</div></div></div>`;
   const note = searching ? `<div class="small muted" style="margin:-4px 2px 10px">전체 기간에서 “${esc(L.q)}” 검색 결과 ${list.length}건</div>` : '';
   if (L.mode === 'cal' && !searching) return sum + calendar(list);
   if (!list.length) return sum + note + `<section class="card">${emptyBox('🔍', searching || L.type !== 'all' || L.person !== 'all' || L.cat !== 'all' ? '조건에 맞는 내역이 없어요' : `${monthLabel(ui.month, false)} 내역이 없어요`, '<button class="btn btn-primary btn-sm" data-act="add">+ 입력하기</button>')}</section>`;
@@ -266,6 +266,9 @@ function grouped(list, showYear = false) {
   return `<div class="tx-list">${out.join('')}</div>`;
 }
 
+// 달력 칸: PC는 정확한 금액, 휴대폰은 칸이 작아 만원 단위
+const calAmt = (v) => (isDesktop() ? num(v) : compactWon(v));
+
 function calendar(list) {
   const m = ui.month;
   const first = parseYmd(m + '-01').getDay();
@@ -284,7 +287,7 @@ function calendar(list) {
     const ds = `${m}-${String(d).padStart(2, '0')}`;
     const b = by[ds];
     const heat = b?.e ? `background:rgba(var(--heat),${(0.1 + 0.34 * (b.e / maxE)).toFixed(3)})` : '';
-    cells += `<button class="d ${ds === td ? 'today' : ''} ${ds === ui.calSel ? 'sel' : ''}" style="${heat}" data-act="cal-day" data-d="${ds}" aria-label="${d}일${b ? ` 지출 ${won(b.e)} 수입 ${won(b.i)}` : ''}"><span class="n">${d}</span>${b?.e ? `<span class="e num">${compactWon(b.e)}</span>` : ''}${b?.i ? `<span class="i num">${compactWon(b.i)}</span>` : ''}</button>`;
+    cells += `<button class="d ${ds === td ? 'today' : ''} ${ds === ui.calSel ? 'sel' : ''}" style="${heat}" data-act="cal-day" data-d="${ds}" aria-label="${d}일${b ? ` 지출 ${won(b.e)} 수입 ${won(b.i)}` : ''}"><span class="n">${d}</span>${b?.e ? `<span class="e num">${calAmt(b.e)}</span>` : ''}${b?.i ? `<span class="i num">${calAmt(b.i)}</span>` : ''}</button>`;
   }
   let dayList = '';
   if (ui.calSel) {
