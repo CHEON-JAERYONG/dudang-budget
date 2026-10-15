@@ -4,8 +4,8 @@
 // - 두 기기의 데이터는 "기록 단위 최신값 우선"으로 병합 → 동시에 입력해도 서로 덮어쓰지 않음.
 // - 저장은 GitHub Contents API의 sha로 낙관적 잠금. 충돌(409) 시 받아서 병합 후 다시 저장.
 // - 오프라인이면 기기에 저장해두고 연결되면 자동 업로드.
-import { DEFAULT_REPO } from './config.js?v=2.1.2';
-import { uid, loadJSON, saveJSON, b64encUtf8, b64decUtf8 } from './util.js?v=2.1.2';
+import { DEFAULT_REPO } from './config.js?v=2.1.3';
+import { uid, loadJSON, saveJSON, b64encUtf8, b64decUtf8 } from './util.js?v=2.1.3';
 
 const LS = { state: 'dudang3.state', sync: 'dudang3.sync', meta: 'dudang3.syncmeta', device: 'dudang3.device' };
 export const COLLS = ['tx', 'invest', 'loans', 'recurring', 'goals', 'goalLogs', 'snapshots'];

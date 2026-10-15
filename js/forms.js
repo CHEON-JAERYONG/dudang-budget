@@ -2,15 +2,15 @@
 import {
   all, get, kv, upsert, remove, setKV, batch, replaceAll, getState, merge, normalize, emptyState, serialize,
   configureSync, disconnectSync, testConnection, syncNow, syncConfig, history, getDevice,
-} from './store.js?v=2.1.2';
-import { PERSONS, PAYS, ASSET_TYPES, LOAN_TYPES, EXPENSE_CATS, INCOME_CATS, TOKEN_URL, DEFAULT_REPO } from './config.js?v=2.1.2';
-import { ui, names, person, me, catList, cat, assetType, recTxId, goalCurrent, budgetTotal, budgetCat } from './core.js?v=2.1.2';
-import { loadSymbols, searchLocal, searchRemote, refreshQuotes, getQuote, krwPer, normalizeSymbol, symbolLabel } from './market.js?v=2.1.2';
+} from './store.js?v=2.1.3';
+import { PERSONS, PAYS, ASSET_TYPES, LOAN_TYPES, EXPENSE_CATS, INCOME_CATS, TOKEN_URL, DEFAULT_REPO } from './config.js?v=2.1.3';
+import { ui, names, person, me, catList, cat, assetType, recTxId, goalCurrent, budgetTotal, budgetCat } from './core.js?v=2.1.3';
+import { loadSymbols, searchLocal, searchRemote, refreshQuotes, getQuote, krwPer, normalizeSymbol, symbolLabel } from './market.js?v=2.1.3';
 import {
   $, $$, esc, uid, num, won, parseAmount, fmtInput, bindAmountInputs, today, ym, ymd, parseYmd, debounce, b64url,
   download, loadJSON, saveJSON, sha256, relTime, fmtDec,
-} from './util.js?v=2.1.2';
-import { openSheet, closeSheet, toast, confirmSheet, ICON } from './ui.js?v=2.1.2';
+} from './util.js?v=2.1.3';
+import { openSheet, closeSheet, toast, confirmSheet, ICON } from './ui.js?v=2.1.3';
 
 const typeKey = (t) => (t === 'income' ? 'income' : 'expense');
 const catGrid = (type, sel, id) => `<div class="cat-grid ${type === 'income' ? 'inc' : ''}" id="${id}">${catList(type).map((c) => `<button type="button" class="cat-btn ${c.key === sel ? 'on' : ''}" data-v="${esc(c.key)}"><span class="e">${c.emoji}</span><span>${esc(c.name)}</span></button>`).join('')}</div>`;
@@ -683,7 +683,7 @@ export function openPairSheet() {
   $('#pf-copy', el).addEventListener('click', async () => {
     try { await navigator.clipboard.writeText(link); toast('✓ 링크를 복사했어요'); } catch { prompt('아래 링크를 복사하세요', link); }
   });
-  $('#pf-share', el)?.addEventListener('click', () => navigator.share({ title: "두덩's 가계부 연결", text: '우리 가계부 연결 링크 🐻💕', url: link }).catch(() => {}));
+  $('#pf-share', el)?.addEventListener('click', () => navigator.share({ title: '우리 가계부 연결', text: '우리 가계부 연결 링크 🐻💕', url: link }).catch(() => {}));
 }
 
 export async function openHistorySheet() {
@@ -705,7 +705,7 @@ export async function confirmDisconnect() {
 
 // ===== 내보내기 / 가져오기 =====
 export function exportJson() {
-  download(`두덩가계부_백업_${today()}.json`, serialize(getState()));
+  download(`우리가계부_백업_${today()}.json`, serialize(getState()));
   toast('✓ 백업 파일을 저장했어요');
 }
 
@@ -717,7 +717,7 @@ export function exportCsv() {
     rows.push([t.date, ty === 'income' ? '수입' : '지출', cat(ty, t.cat).name, t.memo || '', t.amount, PAYS.find((p) => p.key === t.pay)?.name || '', person(t.person).name, t.by ? person(t.by).name : '']);
   }
   const csv = '﻿' + rows.map((r) => r.map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\r\n');
-  download(`두덩가계부_내역_${today()}.csv`, csv, 'text/csv;charset=utf-8');
+  download(`우리가계부_내역_${today()}.csv`, csv, 'text/csv;charset=utf-8');
   toast(`✓ ${list.length}건을 엑셀 파일로 저장했어요`);
 }
 

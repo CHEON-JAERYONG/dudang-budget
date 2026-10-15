@@ -1,16 +1,16 @@
 // 화면 렌더링 — 홈 / 내역 / 통계 / 자산 / 설정
-import { all, kv, exists, syncStatus, getDevice } from './store.js?v=2.1.2';
-import { APP_VERSION, REFRESH_OPTIONS } from './config.js?v=2.1.2';
+import { all, kv, exists, syncStatus, getDevice } from './store.js?v=2.1.3';
+import { APP_VERSION, REFRESH_OPTIONS } from './config.js?v=2.1.3';
 import {
   ui, names, person, me, PERSON_COLOR, catList, cat, pay, assetType, loanType, txMonth, txYear, totals, sumBy, expensesOf,
   monthsBack, sortTx, budgetTotal, budgetCat, monthProgress, recTxId, ruleDate, holdingValue, netWorth, goalCurrent, dday,
   greeting, refreshSec, mkChart, chartOptions, barStyle, cssVar, isDesktop,
-} from './core.js?v=2.1.2';
-import { getQuote, lastQuoteTime, symbolLabel, marketState, fxInfo, krwPer } from './market.js?v=2.1.2';
+} from './core.js?v=2.1.3';
+import { getQuote, lastQuoteTime, symbolLabel, marketState, fxInfo, krwPer } from './market.js?v=2.1.3';
 import {
   esc, num, won, signedWon, compactWon, fmtDec, ym, today, addMonths, daysInMonth, monthLabel, parseYmd, dayLabel, relTime, clock, weekday, loadJSON,
-} from './util.js?v=2.1.2';
-import { ICON } from './ui.js?v=2.1.2';
+} from './util.js?v=2.1.3';
+import { ICON } from './ui.js?v=2.1.3';
 
 const PERSON_ORDER = ['husband', 'both', 'wife'];
 
@@ -174,7 +174,7 @@ export function homeView() {
     ${goals.slice(0, 3).map((g) => { const cur = goalCurrent(g), p = g.target ? Math.min(100, (cur / g.target) * 100) : 0; return `<div class="goal" style="padding:8px 0"><div class="top"><span class="emo" style="font-size:20px">${esc(g.emoji || '🎯')}</span><span class="nm">${esc(g.name)}</span><span class="small num"><b>${Math.round(p)}%</b></span></div><div class="bar"><i style="width:${p}%"></i></div></div>`; }).join('')}</section>` : '';
 
   const dd = dday();
-  const head = `<div class="greet"><div class="hello">🐻 ${greeting()}, ${me() === 'both' ? '우리 두덩이들' : esc(names()[me()]) + '님'}</div>${dd ? `<span class="dday"><span class="heart">💕</span> ${dd}</span>` : ''}</div>
+  const head = `<div class="greet"><div class="hello">🐻 ${greeting()}, ${me() === 'both' ? '우리 둘' : esc(names()[me()]) + '님'}</div>${dd ? `<span class="dday"><span class="heart">💕</span> ${dd}</span>` : ''}</div>
     <div class="page-head">${monthSwitch()}<span class="spacer"></span></div>`;
 
   let body;
@@ -576,12 +576,12 @@ export function settingsView() {
     <section class="card"><div class="card-h"><h3>💾 데이터</h3></div><div class="set-list">
       <div class="set-row click" data-act="export-csv"><div class="lbl"><b>엑셀(CSV)로 내보내기</b><span>전체 내역을 엑셀에서 열 수 있게</span></div>${ICON.right}</div>
       <div class="set-row click" data-act="export-json"><div class="lbl"><b>백업 파일 저장</b><span>모든 데이터를 파일 하나로 (JSON)</span></div>${ICON.right}</div>
-      <div class="set-row click" data-act="import"><div class="lbl"><b>백업·예전 가계부 가져오기</b><span>예전 “두덩's 가계부” 백업도 그대로 불러와요</span></div>${ICON.right}</div>
+      <div class="set-row click" data-act="import"><div class="lbl"><b>백업·예전 가계부 가져오기</b><span>예전 가계부(1.0) 백업도 그대로 불러와요</span></div>${ICON.right}</div>
       <div class="set-row click" data-act="reset"><div class="lbl"><b class="bad-text">전체 초기화</b><span>모든 기록 삭제 (동기화 중이면 배우자 기기에서도 삭제)</span></div>${ICON.right}</div>
     </div></section>
     <section class="card"><div class="card-h"><h3>📲 앱처럼 쓰기</h3></div>
       <p class="small ink2" style="margin:0 0 6px"><b>아이폰</b>: Safari 공유 버튼 → “홈 화면에 추가”<br><b>안드로이드</b>: Chrome 메뉴(⋮) → “홈 화면에 추가” 또는 “앱 설치”<br><b>PC</b>: Chrome 주소창 오른쪽 설치 아이콘</p>
-      <p class="tiny muted" style="margin:8px 0 0">두덩's 가계부 v${APP_VERSION} · 🐻💕 made for 두덩이들</p></section>
+      <p class="tiny muted" style="margin:8px 0 0">우리 가계부 v${APP_VERSION} · 🐻💕</p></section>
   </div></div>`;
   return { html };
 }

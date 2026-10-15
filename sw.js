@@ -1,7 +1,7 @@
-// 두덩's 가계부 — 서비스워커
+// 우리 가계부 — 서비스워커
 // 앱 파일: 네트워크 우선(항상 최신) → 실패 시 캐시 (오프라인에서도 열림)
 // GitHub API·시세 요청은 건드리지 않음
-const CACHE = 'dudang-v2.1.2';
+const CACHE = 'dudang-v2.1.3';
 const SHELL = [
   './', './index.html', './css/app.css', './js/app.js', './js/core.js', './js/views.js', './js/forms.js', './js/store.js',
   './js/market.js', './js/ui.js', './js/util.js', './js/config.js', './data/symbols.json', './vendor/chart.umd.min.js', './vendor/qrcode.js',
