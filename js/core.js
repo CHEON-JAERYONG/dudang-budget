@@ -1,8 +1,8 @@
 // 화면 공통 상태 + 계산 함수
-import { all, kv, getDevice } from './store.js?v=2.1.4';
-import { PERSONS, EXPENSE_CATS, INCOME_CATS, PAYS, ASSET_TYPES, LOAN_TYPES } from './config.js?v=2.1.4';
-import { ym, today, daysInMonth, addMonths, parseYmd, compactWon, won, loadJSON } from './util.js?v=2.1.4';
-import { getQuote, krwPer } from './market.js?v=2.1.4';
+import { all, kv, getDevice } from './store.js?v=2.1.5';
+import { PERSONS, EXPENSE_CATS, INCOME_CATS, PAYS, ASSET_TYPES, LOAN_TYPES } from './config.js?v=2.1.5';
+import { ym, today, daysInMonth, addMonths, parseYmd, compactWon, won, loadJSON } from './util.js?v=2.1.5';
+import { getQuote, krwPer } from './market.js?v=2.1.5';
 
 export const ui = {
   route: 'home',

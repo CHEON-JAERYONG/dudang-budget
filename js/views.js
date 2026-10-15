@@ -1,18 +1,20 @@
 // 화면 렌더링 — 홈 / 내역 / 통계 / 자산 / 설정
-import { all, kv, exists, syncStatus, getDevice } from './store.js?v=2.1.4';
-import { APP_VERSION, REFRESH_OPTIONS } from './config.js?v=2.1.4';
+import { all, kv, exists, syncStatus, getDevice } from './store.js?v=2.1.5';
+import { APP_VERSION, REFRESH_OPTIONS } from './config.js?v=2.1.5';
 import {
   ui, names, person, me, PERSON_COLOR, catList, cat, pay, assetType, loanType, txMonth, txYear, totals, sumBy, expensesOf,
   monthsBack, sortTx, budgetTotal, budgetCat, monthProgress, recTxId, ruleDate, holdingValue, netWorth, goalCurrent, dday,
   greeting, refreshSec, mkChart, chartOptions, barStyle, cssVar, isDesktop,
-} from './core.js?v=2.1.4';
-import { getQuote, lastQuoteTime, symbolLabel, marketState, fxInfo, krwPer } from './market.js?v=2.1.4';
+} from './core.js?v=2.1.5';
+import { getQuote, lastQuoteTime, symbolLabel, marketState, fxInfo, krwPer } from './market.js?v=2.1.5';
 import {
   esc, num, won, signedWon, compactWon, fmtDec, ym, today, addMonths, daysInMonth, monthLabel, parseYmd, dayLabel, relTime, clock, weekday, loadJSON,
-} from './util.js?v=2.1.4';
-import { ICON } from './ui.js?v=2.1.4';
+} from './util.js?v=2.1.5';
+import { ICON } from './ui.js?v=2.1.5';
 
 const PERSON_ORDER = ['husband', 'both', 'wife'];
+// 손익 색: 오르면 빨강, 내리면 파랑, 0이면 기본색
+const tone = (n) => (n > 0 ? 'up' : n < 0 ? 'down' : '');
 
 // ===== 공통 조각 =====
 export function monthSwitch(label = monthLabel(ui.month)) {
@@ -152,9 +154,10 @@ export function homeView() {
       <div class="tiny muted" style="margin:-6px 0 8px">매달 고정지출 ${won(fixedExp)} · 그날 자동 입력</div>
       ${rules.slice(0, 6).map((r) => {
         const done = exists('tx', recTxId(r.id, m));
+        const eff = Math.min(Number(r.day) || 1, daysInMonth(m)); // 31일 → 30일까지인 달은 30일
         const future = r.start && r.start > m;
         const c = cat(r.type === 'income' ? 'income' : 'expense', r.cat);
-        const st = future ? `<span class="badge">${Number(r.start.slice(5))}월부터</span>` : done ? '<span class="badge good">✓ 입력됨</span>' : isCur ? `<span class="badge ${r.day - td <= 3 ? 'warn' : ''}">${r.day > td ? 'D-' + (Math.min(r.day, daysInMonth(m)) - td) : '오늘'}</span>` : '<span class="badge">예정</span>';
+        const st = future ? `<span class="badge">${Number(r.start.slice(5))}월부터</span>` : done ? '<span class="badge good">✓ 입력됨</span>' : isCur ? (eff > td ? `<span class="badge ${eff - td <= 3 ? 'warn' : ''}">D-${eff - td}</span>` : '<span class="badge warn">오늘</span>') : '<span class="badge">예정</span>';
         return `<div class="tx" style="cursor:default"><span class="emo">${c.emoji}</span><span style="min-width:0"><span class="t1" style="display:block">${esc(r.memo || c.name)}</span><span class="t2" style="display:block">매달 ${r.day >= 31 ? '말' : r.day}일 · ${esc(person(r.person).name)}</span></span><span class="amt num ${r.type === 'income' ? 'inc' : ''}">${num(r.amount)}원<small>${st}</small></span></div>`;
       }).join('')}</section>`;
   } else {
@@ -211,7 +214,7 @@ export function homeAssetsInner() {
   return `<div class="card-h"><h3>💰 우리 자산</h3><button class="link" data-go="assets">자세히 →</button></div>
     <div class="nw"><span class="muted small">순자산</span><span class="big num" style="font-size:26px">${won(nw.net)}</span></div>
     <div class="nw-split"><div><div class="tiny muted">자산</div><b class="num">${won(nw.assets)}</b></div><div><div class="tiny muted">대출</div><b class="num">${won(nw.debts)}</b></div></div>
-    ${nw.marketValue ? `<div class="small" style="margin-top:10px">투자 평가손익 <b class="num ${nw.marketPl >= 0 ? 'up' : 'down'}">${signedWon(nw.marketPl)}</b> · 오늘 <b class="num ${nw.day >= 0 ? 'up' : 'down'}">${signedWon(nw.day)}</b></div>` : ''}`;
+    ${nw.marketValue ? `<div class="small" style="margin-top:10px">투자 평가손익 <b class="num ${tone(nw.marketPl)}">${signedWon(nw.marketPl)}</b> · 오늘 <b class="num ${tone(nw.day)}">${signedWon(nw.day)}</b></div>` : ''}`;
 }
 
 // ===== 내역 =====
@@ -440,7 +443,7 @@ function holdRow(h) {
   } else {
     meta = `${t.name}${h.note ? ' · ' + esc(h.note) : ''}`;
   }
-  const plHtml = v.cost ? `<span class="${v.pl >= 0 ? 'up' : 'down'} num">${signedWon(v.pl)} (${v.plPct >= 0 ? '+' : ''}${v.plPct.toFixed(2)}%)</span>` : '';
+  const plHtml = v.cost ? `<span class="${tone(v.pl)} num">${signedWon(v.pl)} (${v.plPct >= 0 ? '+' : ''}${v.plPct.toFixed(2)}%)</span>` : '';
   return `<button class="hold" data-act="invest" data-id="${esc(h.id)}">
     <span style="min-width:0"><span class="nm"><span>${t.emoji} ${esc(h.name || symbolLabel(h.symbol))}</span><span class="badge">${p.emoji} ${esc(p.name)}</span></span><span class="meta" style="display:block">${meta}</span></span>
     <span class="right"><span class="val num">${won(v.value)}</span><span class="pl">${plHtml}</span></span>
@@ -457,8 +460,8 @@ export function investInner() {
   const sumHtml = market.length ? `<div class="kpis four" style="margin-bottom:12px">
       <div class="kpi"><div class="k">투자 평가금액</div><div class="v num">${won(nw.marketValue)}</div></div>
       <div class="kpi"><div class="k">투자 원금</div><div class="v num">${won(nw.marketCost)}</div></div>
-      <div class="kpi"><div class="k">평가손익</div><div class="v num ${nw.marketPl >= 0 ? 'up' : 'down'}">${signedWon(nw.marketPl)}</div><div class="d muted">${nw.marketCost ? ((nw.marketPl / nw.marketCost) * 100).toFixed(2) + '%' : ''}</div></div>
-      <div class="kpi"><div class="k">오늘 변동</div><div class="v num ${nw.day >= 0 ? 'up' : 'down'}">${signedWon(nw.day)}</div></div>
+      <div class="kpi"><div class="k">평가손익</div><div class="v num ${tone(nw.marketPl)}">${signedWon(nw.marketPl)}</div><div class="d muted">${nw.marketCost ? ((nw.marketPl / nw.marketCost) * 100).toFixed(2) + '%' : ''}</div></div>
+      <div class="kpi"><div class="k">오늘 변동</div><div class="v num ${tone(nw.day)}">${signedWon(nw.day)}</div></div>
     </div>` : '';
   return `${sumHtml}
     <section class="card"><div class="card-h"><h3>📊 주식·코인</h3><button class="btn btn-sm btn-primary" data-act="invest-new" data-kind="market">+ 종목 추가</button></div>
@@ -570,7 +573,7 @@ export function settingsView() {
     <section class="card"><div class="card-h"><h3>⚙️ 앱 설정</h3></div><div class="set-list">
       <div class="set-row click" data-act="cats"><div class="lbl"><b>카테고리 관리</b><span>숨기기 · 새 카테고리 만들기</span></div>${ICON.right}</div>
       <div class="set-row"><div class="lbl"><b>시세 갱신 주기</b><span>투자 종목 실시간 시세</span></div><select class="input" id="set-refresh">${REFRESH_OPTIONS.map((o) => `<option value="${o.v}" ${refreshSec() === o.v ? 'selected' : ''}>${o.label}</option>`).join('')}</select></div>
-      <div class="set-row"><div class="lbl"><b>화면 테마</b></div><select class="input" id="set-theme"><option value="auto" ${theme === 'auto' ? 'selected' : ''}>기기 설정 따라가기</option><option value="light" ${theme === 'light' ? 'selected' : ''}>밝게</option><option value="dark" ${theme === 'dark' ? 'selected' : ''}>어둡게</option></select></div>
+      <div class="set-row"><div class="lbl"><b>화면 테마</b></div><select class="input" id="set-theme"><option value="auto" ${theme === 'auto' ? 'selected' : ''}>자동</option><option value="light" ${theme === 'light' ? 'selected' : ''}>밝게</option><option value="dark" ${theme === 'dark' ? 'selected' : ''}>어둡게</option></select></div>
       <div class="set-row"><div class="lbl"><b>🔒 잠금 비밀번호</b><span>이 기기에서 열 때 4자리 비밀번호</span></div><label class="toggle"><input type="checkbox" id="set-pin" ${pinOn ? 'checked' : ''} /><span></span></label></div>
     </div></section>
     <section class="card"><div class="card-h"><h3>💾 데이터</h3></div><div class="set-list">

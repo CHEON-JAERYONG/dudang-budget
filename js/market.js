@@ -4,7 +4,7 @@
 //   · 코인: 업비트 공개 API (직접 호출)
 //   · 환율: open.er-api.com (무료, 직접 호출)
 // 종목 표기:  KR:005930  /  WS:AAPL.O  /  CR:KRW-BTC
-import { loadJSON, saveJSON } from './util.js?v=2.1.4';
+import { loadJSON, saveJSON } from './util.js?v=2.1.5';
 
 const PROXIES = [
   (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,

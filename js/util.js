@@ -20,7 +20,8 @@ export const signedWon = (n) => (n > 0 ? '+' : n < 0 ? '−' : '') + num(Math.ab
 // 1,234만 / 1.2억 형태
 export function compactWon(n) {
   const a = Math.abs(n), s = n < 0 ? '−' : '';
-  if (a >= 1e8) return s + trimZero((a / 1e8).toFixed(a >= 1e9 ? 1 : 2)) + '억';
+  // 9,999.5만 이상은 반올림하면 "10,000만"이 되므로 억으로 표시
+  if (a >= 99995000) return s + trimZero((a / 1e8).toFixed(a >= 1e9 ? 1 : 2)) + '억';
   if (a >= 1e4) return s + num(Math.round(a / 1e4)) + '만';
   return s + num(a);
 }
@@ -40,24 +41,62 @@ export function fmtDec(n, digits = 2) {
 
 export const pct = (n, d = 1) => (Number.isFinite(n) ? (n > 0 ? '+' : '') + n.toFixed(d) + '%' : '-');
 
-// 금액 입력 칸 자동 콤마
+// ===== 금액 입력 칸 =====
+// 정수 13자리(9조)까지 — 그보다 길면 자바스크립트 숫자 정밀도가 깨짐. 소수는 코인 수량용 8자리
+const MAX_INT_DIGITS = 13;
+const MAX_DEC_DIGITS = 8;
+function cleanNumber(s, dec) {
+  let t = String(s).replace(dec ? /[^\d.]/g : /\D/g, '');
+  const dot = t.indexOf('.');
+  if (dot >= 0) t = t.slice(0, dot + 1) + t.slice(dot + 1).replace(/\./g, '').slice(0, MAX_DEC_DIGITS);
+  let [i, f] = t.split('.');
+  i = i.replace(/^0+(?=\d)/, '').slice(0, MAX_INT_DIGITS);
+  if (f !== undefined && !i) i = '0';
+  return f !== undefined ? i + '.' + f : i;
+}
+// 숫자 글자 → "1,234.5" (Number로 바꾸지 않아 큰 수·긴 소수도 그대로)
+export function formatNumberText(s, dec = false) {
+  const [i, f] = cleanNumber(s, dec).split('.');
+  return i.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + (f !== undefined ? '.' + f : '');
+}
+const digitsOf = (s) => s.replace(/[^\d.]/g, '');
+
+// 큰 금액 칸은 숫자가 길어지면 글자를 줄여 끝까지 보이게
+const fitLong = (el) => { if (el.closest('.amount-wrap')) el.classList.toggle('long', el.value.length > 13); };
+
+// 자동 콤마 + 커서 위치 유지. 쉼표 바로 옆에서 지우면 쉼표 너머 숫자를 지움
 export function bindAmountInputs(root) {
   $$('input[data-amount]', root).forEach((el) => {
-    el.addEventListener('input', () => {
-      const allowDec = el.dataset.amount === 'dec';
-      let raw = el.value.replace(allowDec ? /[^\d.]/g : /[^\d]/g, '');
-      if (allowDec) {
-        const [i, ...rest] = raw.split('.');
-        const intPart = i ? Number(i).toLocaleString('ko-KR') : (rest.length ? '0' : '');
-        el.value = rest.length ? intPart + '.' + rest.join('').slice(0, 6) : intPart;
-      } else {
-        el.value = raw ? Number(raw).toLocaleString('ko-KR') : '';
+    const dec = el.dataset.amount === 'dec';
+    let before = el.value;
+    fitLong(el);
+    el.addEventListener('beforeinput', () => { before = el.value; });
+    el.addEventListener('input', (e) => {
+      let v = el.value;
+      let caret = el.selectionStart ?? v.length;
+      const del = e.inputType === 'deleteContentBackward' ? -1 : e.inputType === 'deleteContentForward' ? 1 : 0;
+      if (del && v.length === before.length - 1 && digitsOf(v) === digitsOf(before)) {
+        if (del < 0 && caret > 0) { v = v.slice(0, caret - 1) + v.slice(caret); caret--; }
+        if (del > 0) v = v.slice(0, caret) + v.slice(caret + 1);
       }
+      const out = formatNumberText(v, dec);
+      // 커서 왼쪽에 있던 숫자 개수만큼 새 글자에서 세어 같은 자리에 커서를 둠
+      const want = cleanNumber(v.slice(0, caret), dec).length;
+      let pos = 0;
+      for (let seen = 0; pos < out.length && seen < want; pos++) if (out[pos] !== ',') seen++;
+      el.value = out;
+      before = out;
+      fitLong(el);
+      if (document.activeElement === el) el.setSelectionRange(pos, pos);
       el.dispatchEvent(new CustomEvent('amount-change', { bubbles: true }));
     });
   });
 }
-export const fmtInput = (n) => (n || n === 0 ? (Number(n) ? Number(n).toLocaleString('ko-KR', { maximumFractionDigits: 6 }) : '') : '');
+export const fmtInput = (n) => {
+  const x = Number(n);
+  if (!x || !Number.isFinite(x)) return '';
+  return formatNumberText(Math.abs(x).toLocaleString('en-US', { useGrouping: false, maximumFractionDigits: MAX_DEC_DIGITS }), true);
+};
 
 // ===== 날짜 (로컬 시간 기준) =====
 const pad = (n) => String(n).padStart(2, '0');

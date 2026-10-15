@@ -1,5 +1,5 @@
 // UI 기본 부품 — 아이콘, 토스트, 시트(모달), 확인창
-import { esc } from './util.js?v=2.1.4';
+import { esc } from './util.js?v=2.1.5';
 
 const sv = (d, extra = '') => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ${extra}>${d}</svg>`;
 export const ICON = {
@@ -108,6 +108,8 @@ export function scheduleFit() {
 new MutationObserver(scheduleFit).observe(document.body, { childList: true, subtree: true, characterData: true });
 window.addEventListener('resize', scheduleFit);
 document.fonts?.ready.then(scheduleFit);
+// 글꼴은 글자 묶음별로 나중에 받아져서 폭이 바뀜 → 받을 때마다 다시 맞춤
+document.fonts?.addEventListener?.('loadingdone', scheduleFit);
 
 // ===== 확인창 =====
 export function confirmSheet({ title, message, ok = '확인', danger = false }) {

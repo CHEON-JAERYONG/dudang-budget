@@ -2,18 +2,18 @@
 import {
   subscribe, all, get, exists, upsert, batch, kv, setKV, syncNow, startAutoSync, syncStatus, configureSync, testConnection,
   getDevice, setDevice,
-} from './store.js?v=2.1.4';
+} from './store.js?v=2.1.5';
 import {
   ui, names, person, me, assetType, recTxId, ruleDate, netWorth, refreshSec, destroyCharts, isDesktop,
-} from './core.js?v=2.1.4';
-import { homeView, listView, listBody, statsView, assetsView, settingsView, investInner, homeAssetsInner, syncCardInner } from './views.js?v=2.1.4';
+} from './core.js?v=2.1.5';
+import { homeView, listView, listBody, statsView, assetsView, settingsView, investInner, homeAssetsInner, syncCardInner } from './views.js?v=2.1.5';
 import {
   openTxForm, openInvestForm, openLoanForm, openGoalForm, openGoalDeposit, openRecurringForm, openBudgetSheet, openCatsSheet,
   openSyncSheet, openPairSheet, openHistorySheet, confirmDisconnect, exportCsv, exportJson, importFile, resetAll, openPinSetup,
-} from './forms.js?v=2.1.4';
-import { refreshQuotes, refreshFx, getQuote } from './market.js?v=2.1.4';
-import { $, $$, esc, num, ym, today, addMonths, relTime, loadJSON, saveJSON, sha256, unb64url, debounce } from './util.js?v=2.1.4';
-import { ICON, toast, sheetOpen, closeSheet } from './ui.js?v=2.1.4';
+} from './forms.js?v=2.1.5';
+import { refreshQuotes, refreshFx, getQuote } from './market.js?v=2.1.5';
+import { $, $$, esc, num, ym, today, addMonths, relTime, loadJSON, saveJSON, sha256, unb64url, debounce } from './util.js?v=2.1.5';
+import { ICON, toast, sheetOpen, closeSheet } from './ui.js?v=2.1.5';
 
 const ROUTES = { home: homeView, list: listView, stats: statsView, assets: assetsView, settings: settingsView };
 const NAV = [

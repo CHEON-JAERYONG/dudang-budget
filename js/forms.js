@@ -2,15 +2,15 @@
 import {
   all, get, kv, upsert, remove, setKV, batch, replaceAll, getState, merge, normalize, emptyState, serialize,
   configureSync, disconnectSync, testConnection, syncNow, syncConfig, history, getDevice,
-} from './store.js?v=2.1.4';
-import { PERSONS, PAYS, ASSET_TYPES, LOAN_TYPES, EXPENSE_CATS, INCOME_CATS, TOKEN_URL, DEFAULT_REPO } from './config.js?v=2.1.4';
-import { ui, names, person, me, catList, cat, assetType, recTxId, goalCurrent, budgetTotal, budgetCat } from './core.js?v=2.1.4';
-import { loadSymbols, searchLocal, searchRemote, refreshQuotes, getQuote, krwPer, normalizeSymbol, symbolLabel } from './market.js?v=2.1.4';
+} from './store.js?v=2.1.5';
+import { PERSONS, PAYS, ASSET_TYPES, LOAN_TYPES, EXPENSE_CATS, INCOME_CATS, TOKEN_URL, DEFAULT_REPO } from './config.js?v=2.1.5';
+import { ui, names, person, me, catList, cat, assetType, recTxId, goalCurrent, budgetTotal, budgetCat } from './core.js?v=2.1.5';
+import { loadSymbols, searchLocal, searchRemote, refreshQuotes, getQuote, krwPer, normalizeSymbol, symbolLabel } from './market.js?v=2.1.5';
 import {
   $, $$, esc, uid, num, won, parseAmount, fmtInput, bindAmountInputs, today, ym, ymd, parseYmd, debounce, b64url,
   download, loadJSON, saveJSON, sha256, relTime, fmtDec,
-} from './util.js?v=2.1.4';
-import { openSheet, closeSheet, toast, confirmSheet, ICON } from './ui.js?v=2.1.4';
+} from './util.js?v=2.1.5';
+import { openSheet, closeSheet, toast, confirmSheet, ICON } from './ui.js?v=2.1.5';
 
 const typeKey = (t) => (t === 'income' ? 'income' : 'expense');
 const catGrid = (type, sel, id) => `<div class="cat-grid ${type === 'income' ? 'inc' : ''}" id="${id}">${catList(type).map((c) => `<button type="button" class="cat-btn ${c.key === sel ? 'on' : ''}" data-v="${esc(c.key)}"><span class="e">${c.emoji}</span><span>${esc(c.name)}</span></button>`).join('')}</div>`;
@@ -131,7 +131,10 @@ export function openTxForm({ id, type, preset, date, copyFrom } = {}) {
     renderSuggest();
   };
   applyType(f.type);
-  bindPick(el, '#tf-type', applyType);
+  bindPick(el, '#tf-type', (t) => {
+    applyType(t);
+    if (t !== 'income' && !f.pay) { f.pay = 'card'; setPick(el, '#tf-pay', 'card'); } // 수입으로 열었다가 지출로 바꾼 경우
+  });
   bindPick(el, '#tf-cat-expense', (v) => { f.cat = v; catTouched = true; });
   bindPick(el, '#tf-cat-income', (v) => { f.cat = v; catTouched = true; });
   bindPick(el, '#tf-person', (v) => { f.person = v; });
@@ -475,26 +478,33 @@ export function openGoalDeposit({ id }) {
   const logs = all('goalLogs').filter((l) => l.goalId === id).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
   const body = `
     <div class="info-box">${esc(g.emoji)} <b>${esc(g.name)}</b> · 지금까지 <b class="num">${won(goalCurrent(g))}</b> / ${won(g.target)}</div>
-    <div class="field"><label for="gd-amount">이번에 모은 금액 (빼려면 앞에 - 입력)</label><div class="amount-wrap inc"><input class="input num" id="gd-amount" inputmode="numeric" placeholder="0" /><span class="unit">원</span></div></div>
+    <div class="seg full" id="gd-sign" style="margin-bottom:12px"><button type="button" class="inc on" data-v="1">💰 모았어요</button><button type="button" class="exp" data-v="-1">💸 뺐어요</button></div>
+    <div class="field"><label for="gd-amount" id="gd-label">이번에 모은 금액</label><div class="amount-wrap inc" id="gd-wrap"><input class="input num" id="gd-amount" data-amount inputmode="numeric" placeholder="0" /><span class="unit">원</span></div></div>
     <div class="row2"><div class="field"><label for="gd-date">날짜</label><input class="input" type="date" id="gd-date" value="${today()}" /></div><div class="field"><div class="lab">누가</div>${personPicks(me(), 'gd-person')}</div></div>
     ${logs.length ? `<div class="lab small" style="font-weight:700;margin:6px 0">적립 기록</div><div class="tbl-wrap"><table class="tbl num"><tbody>${logs.slice(0, 30).map((l) => `<tr><td>${esc(l.date)}</td><td>${person(l.person).emoji}</td><td>${num(l.amount)}원</td><td style="width:40px"><button type="button" class="icon-btn" data-del="${esc(l.id)}" aria-label="삭제" style="width:30px;height:30px">${ICON.trash}</button></td></tr>`).join('')}</tbody></table></div>` : ''}`;
   const el = openSheet({ title: '목표 적립', body, foot: '<button type="button" class="btn btn-primary" id="gd-save">적립하기</button>' });
   let who = me();
+  let sign = 1;
   bindPick(el, '#gd-person', (v) => { who = v; });
+  bindAmountInputs(el);
   const amt = $('#gd-amount', el);
-  amt.addEventListener('input', () => {
-    const neg = amt.value.trim().startsWith('-');
-    const d = amt.value.replace(/[^\d]/g, '');
-    amt.value = (neg ? '-' : '') + (d ? Number(d).toLocaleString('ko-KR') : '');
+  // 아이폰 숫자 키패드엔 "-"가 없어서 모음/뺌을 버튼으로 고름
+  bindPick(el, '#gd-sign', (v) => {
+    sign = Number(v);
+    $('#gd-label', el).textContent = sign < 0 ? '이번에 뺀 금액' : '이번에 모은 금액';
+    $('#gd-wrap', el).className = 'amount-wrap ' + (sign < 0 ? 'exp' : 'inc');
+    $('#gd-save', el).textContent = sign < 0 ? '빼기' : '적립하기';
+    amt.focus();
   });
   setTimeout(() => amt.focus(), 280);
   $('#gd-save', el).addEventListener('click', () => {
-    const v = parseAmount(amt.value);
+    const v = Math.round(parseAmount(amt.value)) * sign;
     if (!v) { toast('금액을 입력해 주세요'); return; }
-    upsert('goalLogs', { id: uid(), goalId: id, amount: v, date: $('#gd-date', el).value || today(), person: who }, `목표 적립 ${g.name} ${num(v)}원`);
+    upsert('goalLogs', { id: uid(), goalId: id, amount: v, date: $('#gd-date', el).value || today(), person: who }, `목표 ${v < 0 ? '인출' : '적립'} ${g.name} ${num(v)}원`);
     closeSheet();
-    toast(`🎯 ${num(v)}원 적립!`);
+    toast(v < 0 ? `💸 ${num(-v)}원을 뺐어요` : `🎯 ${num(v)}원 적립!`);
   });
+  amt.addEventListener('keydown', (e) => { if (e.key === 'Enter') $('#gd-save', el).click(); });
   el.addEventListener('click', (e) => {
     const b = e.target.closest('button[data-del]');
     if (!b) return;
