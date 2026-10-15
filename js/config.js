@@ -1,5 +1,5 @@
-// 우리 가계부 — 상수/카테고리 정의
-export const APP_VERSION = '2.1.3';
+// 찌롱 ♥ 두덩 가계부 — 상수/카테고리 정의
+export const APP_VERSION = '2.1.4';
 
 // 데이터 저장소 (비공개 GitHub 저장소)
 export const DEFAULT_REPO = { owner: 'CHEON-JAERYONG', repo: 'dudang-budget-data', path: 'data.json', branch: 'main' };
@@ -7,7 +7,7 @@ export const DEFAULT_REPO = { owner: 'CHEON-JAERYONG', repo: 'dudang-budget-data
 // 토큰 발급 페이지 (이름·권한·만료 없음 미리 채움, 저장소 선택만 직접)
 export const TOKEN_URL = 'https://github.com/settings/personal-access-tokens/new'
   + '?name=' + encodeURIComponent('dudang-budget')
-  + '&description=' + encodeURIComponent("우리 가계부 동기화용 (dudang-budget-data 저장소만 선택)")
+  + '&description=' + encodeURIComponent("찌롱 ♥ 두덩 가계부 동기화용 (dudang-budget-data 저장소만 선택)")
   + '&expires_in=none&contents=write';
 
 export const PERSONS = [

@@ -1,19 +1,19 @@
-// 우리 가계부 2.0 — 앱 시작, 화면 전환, 동기화·시세 루프
+// 찌롱 ♥ 두덩 가계부 2.0 — 앱 시작, 화면 전환, 동기화·시세 루프
 import {
   subscribe, all, get, exists, upsert, batch, kv, setKV, syncNow, startAutoSync, syncStatus, configureSync, testConnection,
   getDevice, setDevice,
-} from './store.js?v=2.1.3';
+} from './store.js?v=2.1.4';
 import {
   ui, names, person, me, assetType, recTxId, ruleDate, netWorth, refreshSec, destroyCharts, isDesktop,
-} from './core.js?v=2.1.3';
-import { homeView, listView, listBody, statsView, assetsView, settingsView, investInner, homeAssetsInner, syncCardInner } from './views.js?v=2.1.3';
+} from './core.js?v=2.1.4';
+import { homeView, listView, listBody, statsView, assetsView, settingsView, investInner, homeAssetsInner, syncCardInner } from './views.js?v=2.1.4';
 import {
   openTxForm, openInvestForm, openLoanForm, openGoalForm, openGoalDeposit, openRecurringForm, openBudgetSheet, openCatsSheet,
   openSyncSheet, openPairSheet, openHistorySheet, confirmDisconnect, exportCsv, exportJson, importFile, resetAll, openPinSetup,
-} from './forms.js?v=2.1.3';
-import { refreshQuotes, refreshFx, getQuote } from './market.js?v=2.1.3';
-import { $, $$, esc, num, ym, today, addMonths, relTime, loadJSON, saveJSON, sha256, unb64url, debounce } from './util.js?v=2.1.3';
-import { ICON, toast, sheetOpen, closeSheet } from './ui.js?v=2.1.3';
+} from './forms.js?v=2.1.4';
+import { refreshQuotes, refreshFx, getQuote } from './market.js?v=2.1.4';
+import { $, $$, esc, num, ym, today, addMonths, relTime, loadJSON, saveJSON, sha256, unb64url, debounce } from './util.js?v=2.1.4';
+import { ICON, toast, sheetOpen, closeSheet } from './ui.js?v=2.1.4';
 
 const ROUTES = { home: homeView, list: listView, stats: statsView, assets: assetsView, settings: settingsView };
 const NAV = [
@@ -42,11 +42,11 @@ function syncChip() {
 }
 
 function renderShell() {
-  $('#sidebar').innerHTML = `<div class="brand"><span class="bear">🐻</span> 우리 가계부 <small>2.0</small></div>
+  $('#sidebar').innerHTML = `<div class="brand"><span class="bear">🐻</span> <span>찌롱 <span class="love">♥</span> 두덩</span> <small>2.0</small></div>
     <button class="btn btn-primary side-add" data-act="add">${ICON.plus} 입력하기</button>
     ${NAV.map((n) => `<a href="#/${n.r}" class="side-link ${ui.route === n.r ? 'active' : ''}" data-go="${n.r}">${n.icon}${n.label}</a>`).join('')}
     <div class="side-foot" id="side-foot">${sideFoot()}</div>`;
-  $('#topbar').innerHTML = `<div class="brand"><span class="bear">🐻</span> 우리 가계부</div><span class="spacer"></span><span id="sync-chip-wrap">${syncChip()}</span>
+  $('#topbar').innerHTML = `<div class="brand"><span class="bear">🐻</span> <span>찌롱 <span class="love">♥</span> 두덩</span></div><span class="spacer"></span><span id="sync-chip-wrap">${syncChip()}</span>
     <button class="icon-btn mobile-only" data-go="settings" aria-label="설정">${ICON.gear}</button>`;
   $('#tabbar').innerHTML = NAV.filter((n) => n.r !== 'settings').map((n, i) => (i === 2 ? `<div class="tab-add"><button class="fab" data-act="add" aria-label="새 내역 입력">${ICON.plus}</button></div>` : '')
     + `<button class="tab ${ui.route === n.r ? 'active' : ''}" data-go="${n.r}">${n.icon}<span>${n.label}</span></button>`).join('');
@@ -334,7 +334,7 @@ function showLock() {
   const wrap = document.createElement('div');
   wrap.className = 'screen';
   wrap.id = 'lock-screen';
-  wrap.innerHTML = `<div class="screen-box"><div class="logo">🐻</div><h1>우리 가계부</h1><p>비밀번호 4자리를 입력하세요</p>
+  wrap.innerHTML = `<div class="screen-box"><div class="logo">🐻</div><h1>찌롱 <span class="love">♥</span> 두덩</h1><p>비밀번호 4자리를 입력하세요</p>
     <div class="pin-dots" id="lk-dots"><i></i><i></i><i></i><i></i></div>
     <div class="keypad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => `<button data-k="${d}">${d}</button>`).join('')}<span></span><button data-k="0">0</button><button class="ghost" data-k="del">지우기</button></div>
     <button class="btn btn-sm" id="lk-forgot" style="margin-top:22px;background:transparent;color:var(--ink-3)">비밀번호를 잊었어요</button></div>`;
@@ -418,7 +418,7 @@ function showWho() {
     const root = $('#screen-root');
     const wrap = document.createElement('div');
     wrap.className = 'screen';
-    wrap.innerHTML = `<div class="screen-box fade-in"><div class="logo">🐻</div><h1>우리 가계부</h1>
+    wrap.innerHTML = `<div class="screen-box fade-in"><div class="logo">🐻</div><h1>찌롱 <span class="love">♥</span> 두덩</h1>
       <p>${pendingPair ? '배우자가 보낸 연결 링크로 들어왔어요 💌<br>' : '신혼부부 둘이 함께 쓰는 가계부예요.<br>'}이 기기는 누가 쓰나요?</p>
       <div class="who-pick"><button data-me="husband" ${hint === 'husband' ? 'style="border-color:var(--brand)"' : ''}><span class="e">👨</span>남편</button><button data-me="wife" ${hint === 'wife' ? 'style="border-color:var(--brand)"' : ''}><span class="e">👩</span>아내</button></div>
       <p class="tiny muted">나중에 설정에서 바꿀 수 있어요</p></div>`;

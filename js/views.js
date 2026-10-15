@@ -1,16 +1,16 @@
 // 화면 렌더링 — 홈 / 내역 / 통계 / 자산 / 설정
-import { all, kv, exists, syncStatus, getDevice } from './store.js?v=2.1.3';
-import { APP_VERSION, REFRESH_OPTIONS } from './config.js?v=2.1.3';
+import { all, kv, exists, syncStatus, getDevice } from './store.js?v=2.1.4';
+import { APP_VERSION, REFRESH_OPTIONS } from './config.js?v=2.1.4';
 import {
   ui, names, person, me, PERSON_COLOR, catList, cat, pay, assetType, loanType, txMonth, txYear, totals, sumBy, expensesOf,
   monthsBack, sortTx, budgetTotal, budgetCat, monthProgress, recTxId, ruleDate, holdingValue, netWorth, goalCurrent, dday,
   greeting, refreshSec, mkChart, chartOptions, barStyle, cssVar, isDesktop,
-} from './core.js?v=2.1.3';
-import { getQuote, lastQuoteTime, symbolLabel, marketState, fxInfo, krwPer } from './market.js?v=2.1.3';
+} from './core.js?v=2.1.4';
+import { getQuote, lastQuoteTime, symbolLabel, marketState, fxInfo, krwPer } from './market.js?v=2.1.4';
 import {
   esc, num, won, signedWon, compactWon, fmtDec, ym, today, addMonths, daysInMonth, monthLabel, parseYmd, dayLabel, relTime, clock, weekday, loadJSON,
-} from './util.js?v=2.1.3';
-import { ICON } from './ui.js?v=2.1.3';
+} from './util.js?v=2.1.4';
+import { ICON } from './ui.js?v=2.1.4';
 
 const PERSON_ORDER = ['husband', 'both', 'wife'];
 
@@ -581,7 +581,7 @@ export function settingsView() {
     </div></section>
     <section class="card"><div class="card-h"><h3>📲 앱처럼 쓰기</h3></div>
       <p class="small ink2" style="margin:0 0 6px"><b>아이폰</b>: Safari 공유 버튼 → “홈 화면에 추가”<br><b>안드로이드</b>: Chrome 메뉴(⋮) → “홈 화면에 추가” 또는 “앱 설치”<br><b>PC</b>: Chrome 주소창 오른쪽 설치 아이콘</p>
-      <p class="tiny muted" style="margin:8px 0 0">우리 가계부 v${APP_VERSION} · 🐻💕</p></section>
+      <p class="tiny muted" style="margin:8px 0 0">찌롱 <span class="love">♥</span> 두덩 v${APP_VERSION} · 🐻💕</p></section>
   </div></div>`;
   return { html };
 }
